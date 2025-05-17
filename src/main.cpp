@@ -9,7 +9,9 @@
 
 // Demo headers
 #include "shader/LoadNoLightShader.hpp"
+#include "LoadMaterials.hpp"
 #include "CreateFloor.hpp"
+#include "CreateVehicle.hpp"
 
 using namespace ES::Plugin;
 
@@ -19,10 +21,12 @@ int main(void)
 
 	core.AddPlugins<Physics::Plugin, Input::Plugin, OpenGL::Plugin>();
 
-    core.RegisterSystem<ES::Engine::Scheduler::Startup>([&](ES::Engine::Core &c) {
-        LoadNoLightShader(c);
-        CreateFloor(c);
-    });
+    core.RegisterSystem<ES::Engine::Scheduler::Startup>(
+        LoadMaterials,
+        LoadNoLightShader,
+        [&](ES::Engine::Core &c){ CreateFloor(c); },
+        CreateVehicle
+    );
 
     core.RegisterSystem<ES::Engine::Scheduler::Startup>(
 		[](ES::Engine::Core &c) {
