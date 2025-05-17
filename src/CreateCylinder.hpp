@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-ES::Plugin::Object::Component::Mesh CreateCylinderMesh(const glm::vec3 &size, int segments = 16);
+ES::Plugin::Object::Component::Mesh CreateCylinderMesh(const glm::vec3 &size, int segments = 16, const glm::vec3 &up = glm::vec3(0.0f, 1.0f, 0.0f));
 
 ES::Engine::Entity CreateCylinder(
     ES::Engine::Core &core,

@@ -10,14 +10,27 @@
 
 ES::Plugin::Object::Component::Mesh CreateCylinderMesh(
 	const glm::vec3 &size,
-	int segments)
+	int segments,
+	const glm::vec3 &up)
 {
 	ES::Plugin::Object::Component::Mesh mesh;
 
 	float radius = size.x;
 	float height = size.y;
 
-	// Top and bottom center points
+	// Normalize up vector and compute a transform to align Y-axis with "up"
+	glm::vec3 up_normalized = glm::normalize(up);
+	glm::vec3 default_up(0.0f, 1.0f, 0.0f);
+
+	glm::mat4 align = glm::mat4(1.0f);
+	if (!glm::all(glm::equal(up_normalized, default_up))) {
+		glm::vec3 axis = glm::cross(default_up, up_normalized);
+		float angle = acos(glm::dot(default_up, up_normalized));
+		if (glm::length(axis) > 0.0001f)
+			align = glm::rotate(glm::mat4(1.0f), angle, glm::normalize(axis));
+	}
+
+	// Top and bottom center points before transformation
 	glm::vec3 top_center(0.0f, height, 0.0f);
 	glm::vec3 bottom_center(0.0f, -height, 0.0f);
 
@@ -31,7 +44,10 @@ ES::Plugin::Object::Component::Mesh CreateCylinderMesh(
 		glm::vec3 bottom(x, -height, z);
 		glm::vec3 normal = glm::normalize(glm::vec3(x, 0.0f, z));
 
-		// Side quad (2 vertices per side)
+		top = glm::vec3(align * glm::vec4(top, 1.0f));
+		bottom = glm::vec3(align * glm::vec4(bottom, 1.0f));
+		normal = glm::normalize(glm::vec3(align * glm::vec4(normal, 0.0f)));
+
 		mesh.vertices.push_back(top);
 		mesh.normals.push_back(normal);
 		mesh.vertices.push_back(bottom);
@@ -53,54 +69,61 @@ ES::Plugin::Object::Component::Mesh CreateCylinderMesh(
 		mesh.indices.push_back(bottom2);
 	}
 
-	// Add top and bottom caps
+	// Add top cap
 	int top_center_index = mesh.vertices.size();
-    mesh.vertices.push_back(top_center);
-    mesh.normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+	top_center = glm::vec3(align * glm::vec4(top_center, 1.0f));
+	mesh.vertices.push_back(top_center);
+	mesh.normals.push_back(up_normalized);
 
-    std::vector<int> top_ring_indices;
-    for (int i = 0; i < segments; ++i) {
-        float angle = 2.0f * glm::pi<float>() * i / segments;
-        float x = radius * cos(angle);
-        float z = radius * sin(angle);
+	std::vector<int> top_ring_indices;
+	for (int i = 0; i < segments; ++i) {
+		float angle = 2.0f * glm::pi<float>() * i / segments;
+		float x = radius * cos(angle);
+		float z = radius * sin(angle);
+		glm::vec3 pos = glm::vec3(x, height, z);
+		pos = glm::vec3(align * glm::vec4(pos, 1.0f));
 
-        mesh.vertices.push_back(glm::vec3(x, height, z));
-        mesh.normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
-        top_ring_indices.push_back(mesh.vertices.size() - 1);
-    }
+		mesh.vertices.push_back(pos);
+		mesh.normals.push_back(up_normalized);
+		top_ring_indices.push_back(mesh.vertices.size() - 1);
+	}
 
-    for (int i = 0; i < segments; ++i) {
-        int next = (i + 1) % segments;
-        mesh.indices.push_back(top_center_index);
-        mesh.indices.push_back(top_ring_indices[i]);
-        mesh.indices.push_back(top_ring_indices[next]);
-    }
+	for (int i = 0; i < segments; ++i) {
+		int next = (i + 1) % segments;
+		mesh.indices.push_back(top_center_index);
+		mesh.indices.push_back(top_ring_indices[i]);
+		mesh.indices.push_back(top_ring_indices[next]);
+	}
 
-    int bottom_center_index = mesh.vertices.size();
-    mesh.vertices.push_back(bottom_center);
-    mesh.normals.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
+	// Add bottom cap
+	int bottom_center_index = mesh.vertices.size();
+	bottom_center = glm::vec3(align * glm::vec4(bottom_center, 1.0f));
+	mesh.vertices.push_back(bottom_center);
+	mesh.normals.push_back(-up_normalized);
 
-    std::vector<int> bottom_ring_indices;
-    for (int i = 0; i < segments; ++i) {
-        float angle = 2.0f * glm::pi<float>() * i / segments;
-        float x = radius * cos(angle);
-        float z = radius * sin(angle);
+	std::vector<int> bottom_ring_indices;
+	for (int i = 0; i < segments; ++i) {
+		float angle = 2.0f * glm::pi<float>() * i / segments;
+		float x = radius * cos(angle);
+		float z = radius * sin(angle);
+		glm::vec3 pos = glm::vec3(x, -height, z);
+		pos = glm::vec3(align * glm::vec4(pos, 1.0f));
 
-        mesh.vertices.push_back(glm::vec3(x, -height, z));
-        mesh.normals.push_back(glm::vec3(0.0f, -1.0f, 0.0f));
-        bottom_ring_indices.push_back(mesh.vertices.size() - 1);
-    }
+		mesh.vertices.push_back(pos);
+		mesh.normals.push_back(-up_normalized);
+		bottom_ring_indices.push_back(mesh.vertices.size() - 1);
+	}
 
-    for (int i = 0; i < segments; ++i) {
-        int next = (i + 1) % segments;
-        mesh.indices.push_back(bottom_center_index);
-        mesh.indices.push_back(bottom_ring_indices[next]);
-        mesh.indices.push_back(bottom_ring_indices[i]);
-    }
-
+	for (int i = 0; i < segments; ++i) {
+		int next = (i + 1) % segments;
+		mesh.indices.push_back(bottom_center_index);
+		mesh.indices.push_back(bottom_ring_indices[next]);
+		mesh.indices.push_back(bottom_ring_indices[i]);
+	}
 
 	return mesh;
 }
+
 
 ES::Engine::Entity CreateCylinder(
 	ES::Engine::Core &core,

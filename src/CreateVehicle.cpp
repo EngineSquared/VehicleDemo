@@ -5,6 +5,7 @@
 #include "VehicleControllerRef.hpp" // TODO: remove this when encapsulated
 #include "JoltPhysics.hpp"
 #include "OpenGL.hpp"
+#include "WheelSettingRef.hpp"
 
 #include <Jolt/Physics/Vehicle/VehicleAntiRollBar.h>
 #include <Jolt/Physics/Vehicle/VehicleCollisionTester.h>
@@ -49,7 +50,7 @@ static ES::Engine::Entity CreateVehicleBody(
     vehicleBody.AddComponent<ES::Plugin::OpenGL::Component::MaterialHandle>(core, "car_body");
     vehicleBody.AddComponent<ES::Plugin::OpenGL::Component::ModelHandle>(core, "car_body");
     vehicleBody.AddComponent<ES::Plugin::Object::Component::Mesh>(core, CreateBoxMesh(
-        glm::vec3(halfVehicleLength, halfVehicleHeight, halfVehicleWidth)
+        glm::vec3(halfVehicleWidth, halfVehicleHeight, halfVehicleLength)
     ));
 
     return vehicleBody;
@@ -64,13 +65,13 @@ static ES::Engine::Entity CreateVehicleWheel(
 {
     // Rotate the wheel 90 degrees around the Z axis so it's oriented correctly
     glm::quat rotation = glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0));
-    ES::Engine::Entity wheel = CreateCylinder(
-        core,
-        position,
-        rotation,
-        glm::vec3(radius, width, radius)
-    );
-
+    ES::Engine::Entity wheel = core.CreateEntity();
+    wheel.AddComponent<ES::Plugin::Object::Component::Transform>(core, position, glm::vec3(1.0f), rotation);
+    wheel.AddComponent<ES::Plugin::Object::Component::Mesh>(core, CreateCylinderMesh(
+        glm::vec3(radius, width, radius),
+        16,
+        glm::vec3(1.0f, 0.0f, 0.0f)
+    ));
     wheel.AddComponent<ES::Plugin::OpenGL::Component::ShaderHandle>(core, "no_light");
     wheel.AddComponent<ES::Plugin::OpenGL::Component::MaterialHandle>(core, "car_wheel");
     wheel.AddComponent<ES::Plugin::OpenGL::Component::ModelHandle>(core, "car_wheel");
@@ -106,15 +107,6 @@ void CreateVehicle(ES::Engine::Core &core)
     auto &physicsManager = core.GetResource<ES::Plugin::Physics::Resource::PhysicsManager>();
     auto &physicsSystem = physicsManager.GetPhysicsSystem();
 
-    std::array<ES::Engine::Entity, 4> wheels;
-
-    for (int i = 0; i < 4; ++i) {
-        glm::vec3 wheelPosition = bodyPosition;
-        wheelPosition.x += (i % 2 == 0 ? -1 : 1) * wheelOffsetHorizontal;
-        wheelPosition.z += (i / 2 == 0 ? -1 : 1) * wheelOffsetHorizontal;
-        wheels[i] = CreateVehicleWheel(core, wheelPosition, wheelRadius, wheelWidth);
-    }
-
     // Create the vehicle body
     ES::Engine::Entity vehicleBody = CreateVehicleBody(
         core,
@@ -132,6 +124,7 @@ void CreateVehicle(ES::Engine::Core &core)
 
     // Set up the wheels
     static auto fl = std::make_shared<JPH::WheelSettingsWV>();
+    fl->mPosition = JPH::Vec3(halfVehicleWidth, -wheelOffsetVertical, wheelOffsetHorizontal);
     fl->mRadius = wheelRadius;
     fl->mWidth = wheelWidth;
     fl->mSuspensionMinLength = suspensionMinLength;
@@ -140,8 +133,11 @@ void CreateVehicle(ES::Engine::Core &core)
     fl->mMaxHandBrakeTorque = 0.0f; // Front wheels don't have handbrake
     fl->SetEmbedded();
     vehicleConstraintSettings->mWheels[0] = fl.get();
+    auto flWheel = CreateVehicleWheel(core, glm::vec3(halfVehicleWidth, -wheelOffsetVertical, wheelOffsetHorizontal), wheelRadius, wheelWidth);
+    flWheel.AddComponent<WheelSettingRef>(core, fl.get(), 0);
 
     static auto fr = std::make_shared<JPH::WheelSettingsWV>();
+    fr->mPosition = JPH::Vec3(-halfVehicleWidth, -wheelOffsetVertical, wheelOffsetHorizontal);
     fr->mRadius = wheelRadius;
     fr->mWidth = wheelWidth;
     fr->mSuspensionMinLength = suspensionMinLength;
@@ -150,8 +146,11 @@ void CreateVehicle(ES::Engine::Core &core)
     fr->mMaxHandBrakeTorque = 0.0f; // Front wheels don't have handbrake
     fr->SetEmbedded();
     vehicleConstraintSettings->mWheels[1] = fr.get();
+    auto frWheel = CreateVehicleWheel(core, glm::vec3(-halfVehicleWidth, -wheelOffsetVertical, wheelOffsetHorizontal), wheelRadius, wheelWidth);
+    frWheel.AddComponent<WheelSettingRef>(core, fr.get(), 1);
 
     static auto rl = std::make_shared<JPH::WheelSettingsWV>();
+    rl->mPosition = JPH::Vec3(halfVehicleWidth, -wheelOffsetVertical, -wheelOffsetHorizontal);
     rl->mRadius = wheelRadius;
     rl->mWidth = wheelWidth;
     rl->mSuspensionMinLength = suspensionMinLength;
@@ -159,8 +158,11 @@ void CreateVehicle(ES::Engine::Core &core)
     rl->mMaxSteerAngle = 0.0f; // Rear wheels don't have steering
     rl->SetEmbedded();
     vehicleConstraintSettings->mWheels[2] = rl.get();
+    auto rlWheel = CreateVehicleWheel(core, glm::vec3(halfVehicleWidth, -wheelOffsetVertical, -wheelOffsetHorizontal), wheelRadius, wheelWidth);
+    rlWheel.AddComponent<WheelSettingRef>(core, rl.get(), 2);
 
     static auto rr = std::make_shared<JPH::WheelSettingsWV>();
+    rr->mPosition = JPH::Vec3(-halfVehicleWidth, -wheelOffsetVertical, -wheelOffsetHorizontal);
     rr->mRadius = wheelRadius;
     rr->mWidth = wheelWidth;
     rr->mSuspensionMinLength = suspensionMinLength;
@@ -168,6 +170,8 @@ void CreateVehicle(ES::Engine::Core &core)
     rr->mMaxSteerAngle = 0.0f; // Rear wheels don't have steering
     rr->SetEmbedded();
     vehicleConstraintSettings->mWheels[3] = rr.get();
+    auto rrWheel = CreateVehicleWheel(core, glm::vec3(-halfVehicleWidth, -wheelOffsetVertical, -wheelOffsetHorizontal), wheelRadius, wheelWidth);
+    rrWheel.AddComponent<WheelSettingRef>(core, rr.get(), 3);
 
     // Set up the vehicle controller
     static auto vehicleControllerSettings = std::make_shared<JPH::WheeledVehicleControllerSettings>();
@@ -207,8 +211,8 @@ void CreateVehicle(ES::Engine::Core &core)
     }
 
     // Anti-roll bars
-    vehicleConstraintSettings->mAntiRollBars.resize(2);
     if (antiRollBar) {
+        vehicleConstraintSettings->mAntiRollBars.resize(2);
         auto frontAntiRollBarSettings = JPH::VehicleAntiRollBar();
         frontAntiRollBarSettings.mLeftWheel = 0;
         frontAntiRollBarSettings.mRightWheel = 1;
@@ -233,4 +237,24 @@ void CreateVehicle(ES::Engine::Core &core)
 
     physicsSystem.AddConstraint(vehicleConstraint.get());
     physicsSystem.AddStepListener(vehicleConstraint.get());
+
+    static const JPH::Vec3 wheelRight(1.0f, 0.0f, 0.0f);
+    static const JPH::Vec3 wheelUp(0.0f, 1.0f, 0.0f);
+
+    core.RegisterSystem<ES::Engine::Scheduler::FixedTimeUpdate>([&](ES::Engine::Core &c) {
+        c.GetRegistry().view<ES::Plugin::Object::Component::Transform, WheelSettingRef>().each(
+            [&](auto entity, auto &transform, auto &wheelSetting) {
+                auto wTransform = vehicleConstraint->GetWheelWorldTransform(wheelSetting.wheelIndex, wheelRight, wheelUp);
+                auto wPosition = wTransform.GetTranslation();
+                auto wRotation = wTransform.GetRotation().GetQuaternion();
+
+                transform.setPosition(glm::vec3(wPosition.GetX(), wPosition.GetY(), wPosition.GetZ()));
+            
+                transform.rotation.w = wRotation.GetW();
+                transform.rotation.x = wRotation.GetX();
+                transform.rotation.y = wRotation.GetY();
+                transform.rotation.z = wRotation.GetZ();
+            }
+        );
+    });
 }
