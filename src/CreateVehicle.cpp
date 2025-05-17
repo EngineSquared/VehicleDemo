@@ -5,6 +5,7 @@
 #include "VehicleControllerRef.hpp" // TODO: remove this when encapsulated
 #include "JoltPhysics.hpp"
 #include "OpenGL.hpp"
+#include "Camera.hpp" // TODO: remove this when camera is in opengl
 #include "WheelSettingRef.hpp"
 
 #include <Jolt/Physics/Vehicle/VehicleAntiRollBar.h>
@@ -19,6 +20,8 @@
 #include <Jolt/Physics/Vehicle/WheeledVehicleController.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
+
+struct VehicleTag {};
 
 static ES::Engine::Entity CreateVehicleBody(
     ES::Engine::Core &core,
@@ -115,6 +118,7 @@ void CreateVehicle(ES::Engine::Core &core)
         halfVehicleWidth,
         halfVehicleHeight
     );
+    vehicleBody.AddComponent<VehicleTag>(core);
     
     // Create the vehicle constraint
     // TODO: this will need to be encapsulated
@@ -242,6 +246,7 @@ void CreateVehicle(ES::Engine::Core &core)
     static const JPH::Vec3 wheelUp(0.0f, 1.0f, 0.0f);
 
     core.RegisterSystem<ES::Engine::Scheduler::FixedTimeUpdate>([&](ES::Engine::Core &c) {
+        // Sync wheels. Wheels in ESQ are just meshes, they are not bodies
         c.GetRegistry().view<ES::Plugin::Object::Component::Transform, WheelSettingRef>().each(
             [&](auto entity, auto &transform, auto &wheelSetting) {
                 auto wTransform = vehicleConstraint->GetWheelWorldTransform(wheelSetting.wheelIndex, wheelRight, wheelUp);
@@ -254,6 +259,13 @@ void CreateVehicle(ES::Engine::Core &core)
                 transform.rotation.x = wRotation.GetX();
                 transform.rotation.y = wRotation.GetY();
                 transform.rotation.z = wRotation.GetZ();
+            }
+        );
+
+        c.GetRegistry().view<VehicleTag, ES::Plugin::Object::Component::Transform>().each(
+            [&](auto entity, auto &vehicleBodyTransform) {
+                auto &camera = c.GetResource<ES::Plugin::OpenGL::Resource::Camera>();
+                camera.viewer.centerAt(vehicleBodyTransform.position);
             }
         );
     });
