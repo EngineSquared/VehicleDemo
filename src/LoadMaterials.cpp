@@ -25,9 +25,9 @@ void LoadMaterials(ES::Engine::Core &core)
     material.Shiness = 64.0f;
     materialManager.Add("car_body"_hs, material);
 
-    // car wheel: black
-    material.Ka = glm::vec3(0.0f, 0.0f, 0.0f);
-    material.Kd = glm::vec3(0.0f, 0.0f, 0.0f);
+    // car wheel: blue
+    material.Ka = glm::vec3(0.0f, 0.0f, 0.8f);
+    material.Kd = glm::vec3(0.0f, 0.0f, 0.8f);
     material.Ks = glm::vec3(0.5f, 0.5f, 0.5f);
     material.Shiness = 64.0f;
 

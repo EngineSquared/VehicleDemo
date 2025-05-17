@@ -12,6 +12,7 @@
 #include "LoadMaterials.hpp"
 #include "CreateFloor.hpp"
 #include "CreateVehicle.hpp"
+#include "VehicleMovement.hpp"
 
 using namespace ES::Plugin;
 
@@ -26,6 +27,10 @@ int main(void)
         LoadNoLightShader,
         [&](ES::Engine::Core &c){ CreateFloor(c); },
         CreateVehicle
+    );
+
+    core.RegisterSystem<ES::Engine::Scheduler::FixedTimeUpdate>(
+        VehicleMovement
     );
 
     core.RegisterSystem<ES::Engine::Scheduler::Startup>(
