@@ -30,7 +30,7 @@ int main(void)
     );
 
     core.RegisterSystem<ES::Engine::Scheduler::FixedTimeUpdate>(
-        VehicleMovement
+        // VehicleMovement
     );
 
     core.RegisterSystem<ES::Engine::Scheduler::Startup>(
