@@ -61,8 +61,8 @@ void WheeledVehicleControllerMovement::operator()(ES::Engine::Core &core) const
 
     // L2 is throttle and R2 is brake
     // Automatic gearbox : if the car speed is very slow, the brake key is used as reverse, like in most games
-    auto throttle = (joystickAxes[PS5_L2_TRIGGER_AXIS] + 1.0f) / 2.0f;
-    auto brakeForce = (joystickAxes[PS5_R2_TRIGGER_AXIS] + 1.0f) / 2.0f;
+    auto throttle = (joystickAxes[PS5_R2_TRIGGER_AXIS] + 1.0f) / 2.0f;
+    auto brakeForce = (joystickAxes[PS5_L2_TRIGGER_AXIS] + 1.0f) / 2.0f;
     if (shouldReverse)
     {
         throttle -= brakeForce;
