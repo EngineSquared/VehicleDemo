@@ -43,6 +43,8 @@ int main(void)
 			c.GetResource<OpenGL::Resource::Camera>().viewer.lookFrom(glm::vec3(0.0f, 10.0f, -20.0f));
             c.GetResource<Physics::Resource::PhysicsManager>().GetPhysicsSystem().OptimizeBroadPhase();
             c.GetScheduler<ES::Engine::Scheduler::FixedTimeUpdate>().SetTickRate(1.0f / 240.0f);
+            printf("Available controllers:\n");
+            ES::Plugin::Input::Utils::PrintAvailableControllers();
 		}
     );
 

@@ -8,6 +8,7 @@
 #include "Camera.hpp" // TODO: remove this when camera is in opengl
 #include "WheelSettingRef.hpp"
 #include "WheeledVehicleKeyboardMovement.hpp"
+#include "WheeledVehicleControllerMovement.hpp"
 #include "WheeledVehicleCameraSync.hpp"
 
 #include <Jolt/Physics/Vehicle/VehicleAntiRollBar.h>
@@ -192,6 +193,8 @@ void CreateVehicle(ES::Engine::Core &core)
     // This system is a class, which is why it is added here instead of being integrated into ESQ
     auto movementSystem = WheeledVehicleKeyboardMovement(vehicleEntity);
     core.RegisterSystem<ES::Engine::Scheduler::FixedTimeUpdate>(movementSystem);
+    auto controllerSystem = WheeledVehicleControllerMovement(vehicleEntity);
+    core.RegisterSystem<ES::Engine::Scheduler::FixedTimeUpdate>(controllerSystem);
     auto cameraSystem = WheeledVehicleCameraSync(vehicleEntity);
     core.RegisterSystem<ES::Engine::Scheduler::FixedTimeUpdate>(cameraSystem);
 }
