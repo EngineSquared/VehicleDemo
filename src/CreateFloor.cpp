@@ -10,7 +10,7 @@ ES::Engine::Entity CreateFloor(ES::Engine::Core &core)
 	using namespace JPH;
 
 	glm::vec3 floor_position(0.0f, 0.0f, 0.0f);
-	glm::vec3 floor_size(100.0f, 1.0f, 100.0f);
+	glm::vec3 floor_size(20.0f, 1.0f, 20.0f);
 
 	ES::Engine::Entity floor = CreateBox(
 		core,
