@@ -1,4 +1,4 @@
-#include "Createbox.hpp"
+#include "CreateBox.hpp"
 
 #include "JoltPhysics.hpp"
 #include "OpenGL.hpp"

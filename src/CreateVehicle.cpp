@@ -117,7 +117,7 @@ void CreateVehicle(ES::Engine::Core &core)
             CreateBoxMesh(glm::vec3(halfVehicleWidth, halfVehicleHeight, halfVehicleLength))
         );
         vehicleBuilder.SetWheelMesh(
-            CreateCylinderMesh(glm::vec3(wheelRadius, wheelWidth, wheelRadius))
+            CreateCylinderMesh(glm::vec3(wheelRadius, wheelWidth, wheelRadius), 16, glm::vec3(1.0f, 0.0f, 0.0f))
         );
         vehicleBuilder.SetOffsetCenterOfMass(glm::vec3(0.0f, -halfVehicleHeight, 0.0f));
         vehicleBuilder.EditWheel(0, [&](JPH::WheelSettingsWV &wheel) {
