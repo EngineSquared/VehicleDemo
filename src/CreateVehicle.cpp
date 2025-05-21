@@ -117,6 +117,16 @@ void CreateVehicle(ES::Engine::Core &core)
         vehicleBuilder.SetWheelMesh(
             CreateCylinderMesh(glm::vec3(wheelRadius, wheelWidth, wheelRadius), 16, glm::vec3(1.0f, 0.0f, 0.0f))
         );
+        vehicleBuilder.SetWheelCallbackFn([](ES::Engine::Core &c, ES::Engine::Entity &entity) {
+            entity.AddComponent<ES::Plugin::OpenGL::Component::ShaderHandle>(c, "no_light");
+            entity.AddComponent<ES::Plugin::OpenGL::Component::MaterialHandle>(c, "car_wheel");
+            entity.AddComponent<ES::Plugin::OpenGL::Component::ModelHandle>(c, "car_wheel");
+        });
+        vehicleBuilder.SetVehicleCallbackFn([](ES::Engine::Core &c, ES::Engine::Entity &entity) {
+            entity.AddComponent<ES::Plugin::OpenGL::Component::ShaderHandle>(c, "no_light");
+            entity.AddComponent<ES::Plugin::OpenGL::Component::MaterialHandle>(c, "car_body");
+            entity.AddComponent<ES::Plugin::OpenGL::Component::ModelHandle>(c, "car_body");
+        });
         vehicleBuilder.SetOffsetCenterOfMass(glm::vec3(0.0f, -halfVehicleHeight, 0.0f));
         vehicleBuilder.EditWheel(0, [&](JPH::WheelSettingsWV &wheel) {
             wheel.mPosition = JPH::Vec3(halfVehicleWidth, -wheelOffsetVertical, wheelOffsetHorizontal);
