@@ -9,6 +9,7 @@ constexpr int PS5_L3_LR_AXIS = 0;
 constexpr int PS5_L3_UD_AXIS = 1;
 constexpr int PS5_L2_TRIGGER_AXIS = 3;
 constexpr int PS5_R2_TRIGGER_AXIS = 4;
+// TODO/ this appears to be the cross button, not the circle...
 constexpr int PS5_CIRCLE_BUTTON = 1;
 
 // Tested on PS5 controller on Windows 11
@@ -73,16 +74,15 @@ void WheeledVehicleControllerMovement::operator()(ES::Engine::Core &core) const
     auto steering = joystickAxes[PS5_L3_LR_AXIS];
 
     // Circle is handbrake
-    // auto handbrakeForce = AdjustAxisValue(joystickButtons[PS5_CIRCLE_BUTTON]);
-    // if (handbrakeForce > 0.0f)
-    // {
-    //     handbrakeForce = 1.0f;
-    // }
-    // else
-    // {
-    //     handbrakeForce = 0.0f;
-    // }
-    auto handbrakeForce = 0.0f;
+    auto handbrakeForce = (joystickButtons[PS5_CIRCLE_BUTTON] + 1.0f) / 2.0f;
+    if (handbrakeForce > 0.51f)
+    {
+        handbrakeForce = 1.0f;
+    }
+    else
+    {
+        handbrakeForce = 0.0f;
+    }
 
     wheeledVehicle.SetDriverInput(throttle, steering, brakeForce, handbrakeForce);
 
