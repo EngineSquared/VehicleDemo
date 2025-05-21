@@ -2,11 +2,8 @@
 
 #include "CreateBox.hpp"
 #include "CreateCylinder.hpp"
-#include "VehicleControllerRef.hpp" // TODO: remove this when encapsulated
 #include "JoltPhysics.hpp"
 #include "OpenGL.hpp"
-#include "Camera.hpp" // TODO: remove this when camera is in opengl
-#include "WheelSettingRef.hpp"
 #include "WheeledVehicleKeyboardMovement.hpp"
 #include "WheeledVehicleControllerMovement.hpp"
 #include "WheeledVehicleCameraSync.hpp"
@@ -23,8 +20,6 @@
 #include <Jolt/Physics/Vehicle/WheeledVehicleController.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
-
-struct VehicleTag {};
 
 static ES::Engine::Entity CreateVehicleBody(
     ES::Engine::Core &core,
@@ -114,7 +109,7 @@ void CreateVehicle(ES::Engine::Core &core)
     {
         // In a separate scope to make sure the builder releases the memory properly
         auto vehicleBuilder = ES::Plugin::Physics::Utils::WheeledVehicleBuilder(core);
-    
+
         vehicleBuilder.SetInitialPosition(bodyPosition);
         vehicleBuilder.SetBodyMesh(
             CreateBoxMesh(glm::vec3(halfVehicleWidth, halfVehicleHeight, halfVehicleLength))

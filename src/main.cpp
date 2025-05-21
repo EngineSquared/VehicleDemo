@@ -12,7 +12,6 @@
 #include "LoadMaterials.hpp"
 #include "CreateFloor.hpp"
 #include "CreateVehicle.hpp"
-#include "VehicleMovement.hpp"
 
 using namespace ES::Plugin;
 
